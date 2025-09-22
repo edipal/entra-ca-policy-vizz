@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeOff, Pencil } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 import { type Policy, ConditionalAccessPolicyState } from "@/types/Policy"
 
 interface PolicyCardProps {

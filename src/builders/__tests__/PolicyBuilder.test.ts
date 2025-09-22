@@ -1,15 +1,15 @@
 import { Policy, RiskLevel, DevicePlatform, BuiltInGrantControl, ClientAppType, PersistentBrowserMode, CloudAppSecurityType, SignInFrequencyType, SignInFrequencyAuthenticationType, SignInFrequencyInterval, GuestOrExternalUserType, ConditionalAccessPolicyState } from "@/types/Policy";
-import { fromCSVRow, COLLECTION_SPLIT_CHAR } from "@/builders/PolicyBuilder";
+import { fromCSVRow, COLLECTION_SPLIT_CHAR, COLUMN_MAP } from "@/builders/PolicyBuilder";
 
 
 describe('fromCSVRow', () => {
   it('should map top-level fields', () => {
     const row = {
-      ID: '123',
-      Name: 'Test Policy',
-      Created: '2024-01-01T00:00:00Z',
-      Modified: '2024-01-02T00:00:00Z',
-      State: 'enabled',
+      [COLUMN_MAP["id"]]: '123',
+      [COLUMN_MAP["displayName"]]: 'Test Policy',
+      [COLUMN_MAP["createdDateTime"]]: '2024-01-01T00:00:00Z',
+      [COLUMN_MAP["modifiedDateTime"]]: '2024-01-02T00:00:00Z',
+      [COLUMN_MAP["state"]]: 'enabled',
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.id).toBe('123');
@@ -21,30 +21,30 @@ describe('fromCSVRow', () => {
 
   it('should map all array fields', () => {
     const row = {
-      UserRiskLevels: `high${COLLECTION_SPLIT_CHAR}low`,
-      SignInRiskLevels: `medium${COLLECTION_SPLIT_CHAR}none`,
-      clientAppTypes: 'browser',
-      ServicePrincipalRiskLevels: '',
-      includeApplications: 'app1',
-      excludeApplications: '',
-      IncludeUserActions: 'urn:user:registersecurityinfo',
-      IncludeAuthenticationContextClassReferences: '',
-      IncludeUsers: 'user1',
-      ExcludeUsers: '',
-      includeGroups: 'group1',
-      excludeGroups: '',
-      IncludeRoles: 'role1',
-      ExcludeRoles: '',
-      IncludePlatforms: 'windows',
-      ExcludePlatforms: '',
-      IncludeLocations: 'loc1',
-      ExcludeLocations: '',
-      IncludeServicePrincipals: 'sp1',
-      ExcludeServicePrincipals: '',
-      transferMethods: 'deviceCodeFlow',
-      BuiltInControls: 'mfa',
-      CustomAuthenticationFactors: '',
-      TermsOfUse: 'terms1',
+      [COLUMN_MAP["conditions.userRiskLevels"]]: `high${COLLECTION_SPLIT_CHAR}low`,
+      [COLUMN_MAP["conditions.signInRiskLevels"]]: `medium${COLLECTION_SPLIT_CHAR}none`,
+      [COLUMN_MAP["conditions.clientAppTypes"]]: 'browser',
+      [COLUMN_MAP["conditions.servicePrincipalRiskLevels"]]: '',
+      [COLUMN_MAP["conditions.applications.includeApplications"]]: 'app1',
+      [COLUMN_MAP["conditions.applications.excludeApplications"]]: '',
+      [COLUMN_MAP["conditions.applications.includeUserActions"]]: 'urn:user:registersecurityinfo',
+      [COLUMN_MAP["conditions.applications.includeAuthenticationContextClassReferences"]]: '',
+      [COLUMN_MAP["conditions.users.includeUsers"]]: 'user1',
+      [COLUMN_MAP["conditions.users.excludeUsers"]]: '',
+      [COLUMN_MAP["conditions.users.includeGroups"]]: 'group1',
+      [COLUMN_MAP["conditions.users.excludeGroups"]]: '',
+      [COLUMN_MAP["conditions.users.includeRoles"]]: 'role1',
+      [COLUMN_MAP["conditions.users.excludeRoles"]]: '',
+      [COLUMN_MAP["conditions.platforms.includePlatforms"]]: 'windows',
+      [COLUMN_MAP["conditions.platforms.excludePlatforms"]]: '',
+      [COLUMN_MAP["conditions.locations.includeLocations"]]: 'loc1',
+      [COLUMN_MAP["conditions.locations.excludeLocations"]]: '',
+      [COLUMN_MAP["conditions.clientApplications.includeServicePrincipals"]]: 'sp1',
+      [COLUMN_MAP["conditions.clientApplications.excludeServicePrincipals"]]: '',
+      [COLUMN_MAP["conditions.authenticationFlows.transferMethods"]]: 'deviceCodeFlow',
+      [COLUMN_MAP["grantControls.builtInControls"]]: 'mfa',
+      [COLUMN_MAP["grantControls.customAuthenticationFactors"]]: '',
+      [COLUMN_MAP["grantControls.termsOfUse"]]: 'terms1',
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.conditions.userRiskLevels).toEqual([RiskLevel.High, RiskLevel.Low]);
@@ -67,7 +67,7 @@ describe('fromCSVRow', () => {
     expect(result.conditions.locations.excludeLocations).toEqual([]);
     expect(result.conditions.clientApplications.includeServicePrincipals).toEqual(['sp1']);
     expect(result.conditions.clientApplications.excludeServicePrincipals).toEqual([]);
-    expect(result.conditions.authenticationFlows.transferMethods).toEqual(['deviceCodeFlow']);
+    expect(result.conditions.authenticationFlows).toEqual(['deviceCodeFlow']);
     expect(result.grantControls.builtInControls).toEqual([BuiltInGrantControl.Mfa]);
     expect(result.grantControls.customAuthenticationFactors).toEqual([]);
     expect(result.grantControls.termsOfUse).toEqual(['terms1']);
@@ -75,25 +75,20 @@ describe('fromCSVRow', () => {
 
   it('should map boolean and number fields, and keep empty as undefined', () => {
     const row = {
-      DisableResilienceDefaults: '',
-      ApplicationEnforcedRestrictions: 'true',
-      CloudAppSecurity_cloudAppSecurityType: 'blockDownloads',
-      CloudAppSecurity_isEnabled: 'false',
-      SignInFrequency_Value: '5',
-      SignInFrequency_Type: 'days',
-      SignInFrequency_AuthenticationType: 'primaryAndSecondaryAuthentication',
-      SignInFrequency_FrequencyInterval: 'timeBased',
-      SignInFrequency_IsEnabled: '',
-      PersistentBrowser_Mode: 'always',
-      PersistentBrowser_IsEnabled: 'true',
+      [COLUMN_MAP["sessionControls.disableResilienceDefaults"]]: '',
+      [COLUMN_MAP["sessionControls.applicationEnforcedRestrictions.isEnabled"]]: 'true',
+      [COLUMN_MAP["sessionControls.cloudAppSecurity.cloudAppSecurityType"]]: 'blockDownloads',
+      [COLUMN_MAP["sessionControls.signInFrequency.value"]]: '5',
+      [COLUMN_MAP["sessionControls.signInFrequency.type"]]: 'days',
+      [COLUMN_MAP["sessionControls.signInFrequency.authenticationType"]]: 'primaryAndSecondaryAuthentication',
+      [COLUMN_MAP["sessionControls.signInFrequency.frequencyInterval"]]: 'timeBased',
+      [COLUMN_MAP["sessionControls.persistentBrowser.mode"]]: 'always',
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.sessionControls.disableResilienceDefaults).toBeUndefined();
-    expect(result.sessionControls.applicationEnforcedRestrictions?.isEnabled).toBe(true);
     expect(result.sessionControls.cloudAppSecurity).toBeDefined();
     if (result.sessionControls.cloudAppSecurity) {
-      expect(result.sessionControls.cloudAppSecurity.cloudAppSecurityType).toBe(CloudAppSecurityType.BlockDownloads);
-      expect(result.sessionControls.cloudAppSecurity.isEnabled).toBe(false);
+      expect(result.sessionControls.cloudAppSecurity).toBe(CloudAppSecurityType.BlockDownloads);
     }
     expect(result.sessionControls.signInFrequency).toBeDefined();
     if (result.sessionControls.signInFrequency) {
@@ -101,30 +96,34 @@ describe('fromCSVRow', () => {
       expect(result.sessionControls.signInFrequency.type).toBe(SignInFrequencyType.Days);
       expect(result.sessionControls.signInFrequency.authenticationType).toBe(SignInFrequencyAuthenticationType.PrimaryAndSecondaryAuthentication);
       expect(result.sessionControls.signInFrequency.frequencyInterval).toBe(SignInFrequencyInterval.TimeBased);
-      expect(result.sessionControls.signInFrequency.isEnabled).toBeUndefined();
     }
     expect(result.sessionControls.persistentBrowser).toBeDefined();
     if (result.sessionControls.persistentBrowser) {
-      expect(result.sessionControls.persistentBrowser.mode).toBe(PersistentBrowserMode.Always);
-      expect(result.sessionControls.persistentBrowser.isEnabled).toBe(true);
+      expect(result.sessionControls.persistentBrowser).toBe(PersistentBrowserMode.Always);
     }
   });
 
   it('should keep filter as string or undefined', () => {
     const row = {
-      DeviceFilter: 'simple string',
-      ApplicationFilter: 'another string',
-      ServicePrincipalFilter: 'spfilter',
+      [COLUMN_MAP["conditions.devices.deviceFilter.mode"]]: 'include',
+      [COLUMN_MAP["conditions.devices.deviceFilter.rule"]]: 'simple string',
+      [COLUMN_MAP["conditions.applications.applicationFilter.mode"]]: 'include',
+      [COLUMN_MAP["conditions.applications.applicationFilter.rule"]]: 'another string',
+      [COLUMN_MAP["conditions.clientApplications.servicePrincipalFilter.mode"]]: 'exclude',
+      [COLUMN_MAP["conditions.clientApplications.servicePrincipalFilter.rule"]]: 'spfilter',
     };
     const result = fromCSVRow(row) as Policy;
-    expect(result.conditions.devices.deviceFilter).toBe('simple string');
-    expect(result.conditions.applications.applicationFilter).toBe('another string');
-    expect(result.conditions.clientApplications.servicePrincipalFilter).toBe('spfilter');
+    expect(result.conditions.devices.deviceFilter.mode).toBe('include');
+    expect(result.conditions.devices.deviceFilter.rule).toBe('simple string');
+    expect(result.conditions.applications.applicationFilter.mode).toBe('include');
+    expect(result.conditions.applications.applicationFilter.rule).toBe('another string');
+    expect(result.conditions.clientApplications.servicePrincipalFilter.mode).toBe('exclude');
+    expect(result.conditions.clientApplications.servicePrincipalFilter.rule).toBe('spfilter');
   });
 
   it('should map grantControls.operator and leave authenticationStrength undefined if not present', () => {
     const row = {
-      Operator: 'AND',
+      [COLUMN_MAP["grantControls.operator"]]: 'AND',
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.grantControls.operator).toBe('AND');
@@ -133,8 +132,10 @@ describe('fromCSVRow', () => {
 
   it('should parse guestOrExternalUserTypes as GuestOrExternalUserType enum values', () => {
     const row = {
-      IncludeGuestsOrExternalUsers: `@{guestOrExternalUserTypes=${GuestOrExternalUserType.B2BCollaborationGuest},${GuestOrExternalUserType.B2BCollaborationMember}; externalTenants=tenantA,tenantB}`,
-      excludeGuestsOrExternalUsers: `@{guestOrExternalUserTypes=${GuestOrExternalUserType.InternalGuest}; externalTenants=tenantC}`,
+      [COLUMN_MAP["conditions.users.includeGuestsOrExternalUsers.externalTenants.members"]]: `tenantA,tenantB`,
+      [COLUMN_MAP["conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes"]]: `${GuestOrExternalUserType.B2BCollaborationGuest},${GuestOrExternalUserType.B2BCollaborationMember}`,
+      [COLUMN_MAP["conditions.users.excludeGuestsOrExternalUsers.externalTenants.members"]]: `tenantC`,
+      [COLUMN_MAP["conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes"]]: `${GuestOrExternalUserType.InternalGuest}`,
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.conditions.users.includeGuestsOrExternalUsers).toEqual({
@@ -156,16 +157,16 @@ describe('fromCSVRow', () => {
     expect(result.conditions.applications.includeApplications).toEqual([]);
     expect(result.conditions.users.includeUsers).toEqual([]);
     expect(result.conditions.platforms.includePlatforms).toEqual([]);
-    expect(result.conditions.users.includeGuestsOrExternalUsers).toBeUndefined();
+    expect(result.conditions.users.includeGuestsOrExternalUsers?.guestOrExternalUserTypes).toEqual([]);
     expect(result.grantControls.builtInControls).toEqual([]);
     expect(result.sessionControls).toBeDefined();
   });
 
   it('should ignore unknown/extra fields', () => {
     const row = {
-      ID: 'id',
+      [COLUMN_MAP["id"]]: 'id',
       UnknownField: 'should be ignored',
-      includeApplications: 'app1',
+      [COLUMN_MAP["conditions.applications.includeApplications"]]: 'app1',
       ExtraField: 'extra',
     };
     const result = fromCSVRow(row) as Policy;
@@ -177,26 +178,27 @@ describe('fromCSVRow', () => {
 
   it('should handle invalid enum values gracefully', () => {
     const row = {
-      State: 'notAValidState',
-      UserRiskLevels: 'notAValidRisk,high',
-      IncludePlatforms: 'notAPlatform,windows',
-      BuiltInControls: 'notAControl,mfa',
+      [COLUMN_MAP["state"]]: 'notAValidState',
+      [COLUMN_MAP["conditions.userRiskLevels"]]: 'notAValidRisk,high',
+      [COLUMN_MAP["conditions.platforms.includePlatforms"]]: 'notAPlatform,windows',
+      [COLUMN_MAP["grantControls.builtInControls"]]: 'notAControl,mfa',
     };
     const result = fromCSVRow(row) as Policy;
-    // Invalid enums will be cast as strings, so they will appear in the array
-    expect(result.state).toBe('notAValidState');
-    expect(result.conditions.userRiskLevels).toEqual(['notAValidRisk', RiskLevel.High]);
-    expect(result.conditions.platforms.includePlatforms).toEqual(['notAPlatform', DevicePlatform.Windows]);
-    expect(result.grantControls.builtInControls).toEqual(['notAControl', BuiltInGrantControl.Mfa]);
+    // Invalid enums will be filtered out, so state will be undefined and arrays will only include valid enums
+    expect(result.state).toBeUndefined();
+    expect(result.conditions.userRiskLevels).toEqual([RiskLevel.High]);
+    expect(result.conditions.platforms.includePlatforms).toEqual([DevicePlatform.Windows]);
+    expect(result.grantControls.builtInControls).toEqual([BuiltInGrantControl.Mfa]);
   });
 
   it('should handle partial/optional nested objects', () => {
     const row = {
-      IncludeGuestsOrExternalUsers: '@{guestOrExternalUserTypes=value1}',
+      [COLUMN_MAP["conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes"]]: `${GuestOrExternalUserType.InternalGuest}`,
     };
     const result = fromCSVRow(row) as Policy;
     expect(result.conditions.users.includeGuestsOrExternalUsers).toEqual({
-      guestOrExternalUserTypes: ['value1'],
+      externalTenants: [],
+      guestOrExternalUserTypes: [GuestOrExternalUserType.InternalGuest],
     });
   });
 });

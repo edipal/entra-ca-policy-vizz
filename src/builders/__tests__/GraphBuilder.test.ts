@@ -1,6 +1,6 @@
 import { fromPolicyCollection } from '../GraphBuilder';
 import { GraphNodeCategory, GraphNodeName } from '@/types/Graph';
-import { Policy, RiskLevel, ClientAppType, DevicePlatform, BuiltInGrantControl, GuestOrExternalUserType, ConditionalAccessPolicyState, CloudAppSecurityType, PersistentBrowserMode, SignInFrequencyType, SignInFrequencyAuthenticationType, SignInFrequencyInterval } from '@/types/Policy';
+import { Policy, RiskLevel, ClientAppType, DevicePlatform, BuiltInGrantControl, GuestOrExternalUserType, ConditionalAccessPolicyState, CloudAppSecurityType, PersistentBrowserMode, SignInFrequencyType, SignInFrequencyAuthenticationType, SignInFrequencyInterval, Operator, FilterModeType, UserActionType } from '@/types/Policy';
 
 describe('fromPolicyCollection', () => {
   it('creates nodes for all mapped fields and aggregates policy codes', () => {
@@ -17,13 +17,13 @@ describe('fromPolicyCollection', () => {
           signInRiskLevels: [RiskLevel.Medium],
           clientAppTypes: [ClientAppType.Browser],
           servicePrincipalRiskLevels: [RiskLevel.Low],
-          devices: { deviceFilter: 'filter1' },
+          devices: { deviceFilter: { mode: FilterModeType.Include, rule: 'filter1' } },
           applications: {
             includeApplications: ['app1'],
             excludeApplications: ['app2'],
-            includeUserActions: ['action1'],
+            includeUserActions: [UserActionType.RegisterSecurityInfo],
             includeAuthenticationContextClassReferences: ['ctx1'],
-            applicationFilter: 'appFilter1',
+            applicationFilter: { mode: FilterModeType.Exclude, rule: 'appFilter1' },
           },
           users: {
             includeUsers: ['user1'],
@@ -52,29 +52,26 @@ describe('fromPolicyCollection', () => {
           clientApplications: {
             includeServicePrincipals: ['sp1'],
             excludeServicePrincipals: ['sp2'],
-            servicePrincipalFilter: 'spFilter1'
+            servicePrincipalFilter: { mode: FilterModeType.Include, rule: 'spFilter1' }
           },
-          authenticationFlows: {
-            transferMethods: ['method1']
-          },
+          authenticationFlows: ['method1'],
           insiderRiskLevels: []
         },
         grantControls: {
           builtInControls: [BuiltInGrantControl.Mfa],
           customAuthenticationFactors: ['factor1'],
           termsOfUse: ['tou1'],
-          operator: 'OR',
+          operator: Operator.OR,
           authenticationStrength: undefined
         },
         sessionControls: {
           disableResilienceDefaults: true,
-          applicationEnforcedRestrictions: { isEnabled: true },
-          cloudAppSecurity: { cloudAppSecurityType: CloudAppSecurityType.McasConfigured, isEnabled: true },
-          persistentBrowser: { mode: PersistentBrowserMode.Always, isEnabled: true },
+          applicationEnforcedRestrictions: true ,
+          cloudAppSecurity: CloudAppSecurityType.McasConfigured,
+          persistentBrowser: PersistentBrowserMode.Always,
           signInFrequency: {
             value: 5,
             type: SignInFrequencyType.Hours,
-            isEnabled: true,
             authenticationType: SignInFrequencyAuthenticationType.PrimaryAndSecondaryAuthentication,
             frequencyInterval: SignInFrequencyInterval.TimeBased
           }
@@ -92,17 +89,24 @@ describe('fromPolicyCollection', () => {
           signInRiskLevels: [],
           clientAppTypes: [],
           servicePrincipalRiskLevels: [],
-          devices: {},
+          devices: {
+            deviceFilter: {}
+          },
           applications: {},
           users: {},
           platforms: {},
           locations: {},
           clientApplications: {},
-          authenticationFlows: {},
+          authenticationFlows: [],
           insiderRiskLevels: []
         },
         grantControls: {},
-        sessionControls: {}
+        sessionControls: {
+          applicationEnforcedRestrictions: undefined,
+          cloudAppSecurity: undefined,
+          persistentBrowser: undefined,
+          signInFrequency: {}
+        }
       }
     ];
     const graph = fromPolicyCollection(policies);
@@ -172,11 +176,16 @@ describe('fromPolicyCollection', () => {
           platforms: {},
           locations: {},
           clientApplications: {},
-          authenticationFlows: {},
+          authenticationFlows: [],
           insiderRiskLevels: []
         },
         grantControls: {},
-        sessionControls: {}
+        sessionControls: {
+          applicationEnforcedRestrictions: undefined,
+          cloudAppSecurity: undefined,
+          persistentBrowser: undefined,
+          signInFrequency: {}
+        }
       }
     ];
     const graph = fromPolicyCollection(policies);
