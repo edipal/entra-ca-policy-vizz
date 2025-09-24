@@ -4,14 +4,15 @@ import { useState, useCallback, useMemo, useEffect } from "react"
 import Header from "@/components/header"
 import MainContent from "@/components/main-content"
 import Sidebar from "@/components/sidebar"
-import { parseCSV } from "@/utils/CSVHelper"
-import { fromCSVRow } from "@/builders/PolicyBuilder"
+import { parseCSV, DEFAULT_CSV_DELIMITER } from "@/utils/CSVHelper"
+import { fromCSVRow, DEFAULT_COLUMN_MAP, setPolicyBuilderDefaults } from "@/builders/PolicyBuilder"
 import { fromPolicyCollection } from "@/builders/GraphBuilder"
 import type { Policy } from "@/types/Policy"
 import type { Graph } from "@/types/Graph"
 import type { PolicyFilter } from "@/components/policy-filters"
 import { GraphNodeName, GraphNodeSubcategory } from "@/types/Graph"
 import { policyMatchesFilter } from "@/utils/PolicyFieldTransforms"
+import ImportConfigModal, { type ImportSettings } from "@/components/import-config-modal"
 
 // Helper uses shared transformation
 const checkPolicyMatchesFilter = (policy: Policy, filter: PolicyFilter): boolean => {
@@ -35,6 +36,14 @@ export default function Home() {
   const [filterOperator, setFilterOperator] = useState<"AND" | "OR">("AND")
   const [policyColorMap, setPolicyColorMap] = useState<Record<string, string>>({}) // NEW STATE
   const [ignoredSubcategories, setIgnoredSubcategories] = useState<GraphNodeSubcategory[]>([])
+  // Import flow state
+  const [showImportConfig, setShowImportConfig] = useState(false)
+  const [pendingCsvText, setPendingCsvText] = useState<string | null>(null)
+  const [importSettings, setImportSettings] = useState<ImportSettings>({
+    csvDelimiter: DEFAULT_CSV_DELIMITER,
+    collectionSplitChar: ",",
+    columnMap: DEFAULT_COLUMN_MAP,
+  })
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev)
@@ -128,21 +137,11 @@ export default function Home() {
     reader.onload = (e) => {
       try {
         const csvString = e.target?.result as string
-        const parsedRows = parseCSV(csvString)
-        const newPolicies = parsedRows.map(fromCSVRow)
-
-        // Sort policies by code
-        newPolicies.sort((a, b) => (a.code || "").localeCompare(b.code || ""))
-        const newGraph = fromPolicyCollection(newPolicies)
-
-        setPolicies(newPolicies)
-        setGraph(newGraph)
-        setFileName(file.name)
-        setPolicyCount(newPolicies.length)
+        setPendingCsvText(csvString)
+        setShowImportConfig(true)
       } catch (err) {
-        console.error("Error processing CSV:", err)
-        setError("Failed to process CSV file. Please ensure it's a valid format.")
-      } finally {
+        console.error("Error reading CSV:", err)
+        setError("Failed to read CSV file. Please try again.")
         setIsLoading(false)
       }
     }
@@ -153,7 +152,34 @@ export default function Home() {
     }
 
     reader.readAsText(file)
+    setFileName(file.name)
   }, [])
+
+  const processImport = useCallback((settings: ImportSettings) => {
+    if (!pendingCsvText) return
+    try {
+      const parsedRows = parseCSV(pendingCsvText, { delimiter: settings.csvDelimiter })
+      // Configure defaults once for this import run
+      setPolicyBuilderDefaults({
+        collectionSplitChar: settings.collectionSplitChar,
+        columnMap: settings.columnMap,
+      })
+      const newPolicies = parsedRows.map((row) => fromCSVRow(row))
+      // Sort policies by code
+      newPolicies.sort((a, b) => (a.code || "").localeCompare(b.code || ""))
+      const newGraph = fromPolicyCollection(newPolicies)
+
+      setPolicies(newPolicies)
+      setGraph(newGraph)
+      setPolicyCount(newPolicies.length)
+    } catch (err) {
+      console.error("Error processing CSV:", err)
+      setError("Failed to process CSV file. Please ensure it's a valid format.")
+    } finally {
+      setIsLoading(false)
+      setPendingCsvText(null)
+    }
+  }, [pendingCsvText])
 
   const handleIgnoredSubcategoriesChange = useCallback((subcats: GraphNodeSubcategory[]) => {
     setIgnoredSubcategories(subcats)
@@ -245,6 +271,21 @@ export default function Home() {
           highlightedPolicy={highlightedPolicy}
         />
       </div>
+      <ImportConfigModal
+        visible={showImportConfig}
+        initialSettings={importSettings}
+        onClose={() => {
+          setShowImportConfig(false)
+          setIsLoading(false)
+          setPendingCsvText(null)
+          setFileName(null)
+        }}
+        onConfirm={(settings) => {
+          setImportSettings(settings)
+          setShowImportConfig(false)
+          processImport(settings)
+        }}
+      />
     </div>
   )
 }

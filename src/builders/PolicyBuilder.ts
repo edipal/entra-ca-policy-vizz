@@ -20,9 +20,21 @@ import {
 // Default character to split CSV collection fields (e.g., lists)
 export const COLLECTION_SPLIT_CHAR = ","
 
+export interface PolicyBuilderOptions {
+  collectionSplitChar?: string
+  columnMap?: ColumnMap
+}
+
+// Mutable module-level defaults that can be set once per import run
+let CURRENT_OPTIONS: { collectionSplitChar: string; columnMap: ColumnMap } = {
+  collectionSplitChar: COLLECTION_SPLIT_CHAR,
+  columnMap: {} as ColumnMap, // will be initialized below after DEFAULT_COLUMN_MAP
+}
+
 const splitOrEmpty = (row: Record<string, string>, columnName: string): string[] => {
   const v = getValueOrUndef(row, columnName)
-  return v ? v.split(COLLECTION_SPLIT_CHAR).map((s) => s.trim()) : []
+  const ch = CURRENT_OPTIONS.collectionSplitChar
+  return v ? v.split(ch).map((s) => s.trim()) : []
 }
 
 const boolOrUndef = (row: Record<string, string>, columnName: string): boolean | undefined => {
@@ -65,7 +77,7 @@ function splitOrEmptyAsEnum<T extends object>(row: Record<string, string>, colum
 }
 
 // Mapping of logical field names to CSV column names (dot notation for clarity)
-export const COLUMN_MAP = {
+export const DEFAULT_COLUMN_MAP = {
    "id": "id",
    "displayName": "displayName",
    "createdDateTime": "createdDateTime",
@@ -98,10 +110,10 @@ export const COLUMN_MAP = {
    "conditions.users.excludeGroups": "conditions.users.excludeGroups",
    "conditions.users.includeRoles": "conditions.users.includeRoles",
    "conditions.users.excludeRoles": "conditions.users.excludeRoles",
-   "conditions.users.includeGuestsOrExternalUsers.externalTenants.members": "conditions.users.excludeGuestsOrExternalUsers.externalTenants.members",
-   "conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes": "conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes",
-   "conditions.users.excludeGuestsOrExternalUsers.externalTenants.members": "conditions.users.includeGuestsOrExternalUsers.externalTenants.members",
-   "conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes": "conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes",
+  "conditions.users.includeGuestsOrExternalUsers.externalTenants.members": "conditions.users.includeGuestsOrExternalUsers.externalTenants.members",
+   "conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes": "conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes",
+   "conditions.users.excludeGuestsOrExternalUsers.externalTenants.members": "conditions.users.excludeGuestsOrExternalUsers.externalTenants.members",
+   "conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes": "conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes",
   "conditions.insiderRiskLevels": "conditions.insiderRiskLevels",
    "grantControls.builtInControls": "grantControls.builtInControls",
    "grantControls.customAuthenticationFactors": "grantControls.customAuthenticationFactors",
@@ -120,10 +132,29 @@ export const COLUMN_MAP = {
    "sessionControls.signInFrequency.frequencyInterval": "sessionControls.signInFrequency.frequencyInterval",
 }
 
-// Helper to get column name from logical name (dot notation)
-const col = (logical: keyof typeof COLUMN_MAP) => COLUMN_MAP[logical]
+export type ColumnMap = typeof DEFAULT_COLUMN_MAP
 
-export function fromCSVRow(row: Record<string, string>): Policy {
+// Backward-compatible export
+export const COLUMN_MAP = DEFAULT_COLUMN_MAP
+
+// Initialize CURRENT_OPTIONS columnMap with defaults now that the const is defined
+CURRENT_OPTIONS.columnMap = DEFAULT_COLUMN_MAP
+
+// Helper to get column name from logical name (dot notation) using current defaults
+const col = (logical: keyof ColumnMap) => CURRENT_OPTIONS.columnMap[logical]
+
+// API to configure defaults from the app flow
+export function setPolicyBuilderDefaults(opts: PolicyBuilderOptions) {
+  if (opts.collectionSplitChar) CURRENT_OPTIONS.collectionSplitChar = opts.collectionSplitChar
+  if (opts.columnMap) CURRENT_OPTIONS.columnMap = opts.columnMap
+}
+
+export function getPolicyBuilderDefaults(): Readonly<typeof CURRENT_OPTIONS> {
+  return CURRENT_OPTIONS
+}
+
+export function fromCSVRow(row: Record<string, string>, _options?: PolicyBuilderOptions): Policy {
+  // _options ignored to keep call sites clean; configure via setPolicyBuilderDefaults instead
   const displayName = getValueOrUndef(row, col("displayName")) || undefined
   const codeFromDisplay = displayName?.match(/CA\d{3,5}/)?.[0]
   const fallbackId = getValueOrUndef(row, col("id"))
@@ -138,10 +169,10 @@ export function fromCSVRow(row: Record<string, string>): Policy {
     state: getValueAsEnumOrUdef(row, col("state"), ConditionalAccessPolicyState),
     conditions: {
       applications: {
-        includeApplications: splitOrEmpty(row, col("conditions.applications.includeApplications")),
-        excludeApplications: splitOrEmpty(row, col("conditions.applications.excludeApplications")),
-        includeUserActions: splitOrEmptyAsEnum(row, col("conditions.applications.includeUserActions"), UserActionType),
-        includeAuthenticationContextClassReferences: splitOrEmpty(row, col("conditions.applications.includeAuthenticationContextClassReferences")),
+  includeApplications: splitOrEmpty(row, col("conditions.applications.includeApplications")),
+  excludeApplications: splitOrEmpty(row, col("conditions.applications.excludeApplications")),
+  includeUserActions: splitOrEmptyAsEnum(row, col("conditions.applications.includeUserActions"), UserActionType),
+  includeAuthenticationContextClassReferences: splitOrEmpty(row, col("conditions.applications.includeAuthenticationContextClassReferences")),
         applicationFilter: {
           mode: getValueAsEnumOrUdef(row, col("conditions.applications.applicationFilter.mode"), FilterModeType),
           rule: getValueOrUndef(row, col("conditions.applications.applicationFilter.rule")),
@@ -156,7 +187,7 @@ export function fromCSVRow(row: Record<string, string>): Policy {
           rule: getValueOrUndef(row, col("conditions.clientApplications.servicePrincipalFilter.rule")),
         }
       },
-      clientAppTypes: splitOrEmptyAsEnum(row, col("conditions.clientAppTypes"), ClientAppType),
+  clientAppTypes: splitOrEmptyAsEnum(row, col("conditions.clientAppTypes"), ClientAppType),
       devices: {
         deviceFilter: {
           mode: getValueAsEnumOrUdef(row, col("conditions.devices.deviceFilter.mode"), FilterModeType),
@@ -168,12 +199,12 @@ export function fromCSVRow(row: Record<string, string>): Policy {
         excludeLocations: splitOrEmpty(row, col("conditions.locations.excludeLocations")),
       },
       platforms: {
-        includePlatforms: splitOrEmptyAsEnum(row, col("conditions.platforms.includePlatforms"), DevicePlatform),
-        excludePlatforms: splitOrEmptyAsEnum(row, col("conditions.platforms.excludePlatforms"), DevicePlatform),
+  includePlatforms: splitOrEmptyAsEnum(row, col("conditions.platforms.includePlatforms"), DevicePlatform),
+  excludePlatforms: splitOrEmptyAsEnum(row, col("conditions.platforms.excludePlatforms"), DevicePlatform),
       },
-      servicePrincipalRiskLevels: splitOrEmptyAsEnum(row, col("conditions.servicePrincipalRiskLevels"), RiskLevel),
-      signInRiskLevels: splitOrEmptyAsEnum(row, col("conditions.signInRiskLevels"), RiskLevel),
-      userRiskLevels: splitOrEmptyAsEnum(row, col("conditions.userRiskLevels"), RiskLevel),
+  servicePrincipalRiskLevels: splitOrEmptyAsEnum(row, col("conditions.servicePrincipalRiskLevels"), RiskLevel),
+  signInRiskLevels: splitOrEmptyAsEnum(row, col("conditions.signInRiskLevels"), RiskLevel),
+  userRiskLevels: splitOrEmptyAsEnum(row, col("conditions.userRiskLevels"), RiskLevel),
       users: {
         includeUsers: splitOrEmpty(row, col("conditions.users.includeUsers")),
         excludeUsers: splitOrEmpty(row, col("conditions.users.excludeUsers")),
