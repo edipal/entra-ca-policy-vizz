@@ -26,7 +26,7 @@ export interface PolicyBuilderOptions {
 }
 
 // Mutable module-level defaults that can be set once per import run
-let CURRENT_OPTIONS: { collectionSplitChar: string; columnMap: ColumnMap } = {
+const CURRENT_OPTIONS: { collectionSplitChar: string; columnMap: ColumnMap } = {
   collectionSplitChar: COLLECTION_SPLIT_CHAR,
   columnMap: {} as ColumnMap, // will be initialized below after DEFAULT_COLUMN_MAP
 }

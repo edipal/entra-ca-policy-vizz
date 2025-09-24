@@ -32,7 +32,7 @@ export default function ImportConfigModal({ visible, onClose, onConfirm, initial
     setCsvDelimiter(initialSettings?.csvDelimiter ?? DEFAULT_CSV_DELIMITER)
     setCollectionSplitChar(initialSettings?.collectionSplitChar ?? ",")
     setColumnMap(initialSettings?.columnMap ?? DEFAULT_COLUMN_MAP)
-  }, [visible])
+  }, [visible, initialSettings?.csvDelimiter, initialSettings?.collectionSplitChar, initialSettings?.columnMap])
 
   const delimiterLabel = (d: string) => (d === "\t" ? "Tab (\\t)" : d === ";" ? "Semicolon (;)" : d === "," ? "Comma (,)" : d === "|" ? "Pipe (|)" : d)
 
