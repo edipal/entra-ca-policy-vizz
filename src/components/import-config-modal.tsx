@@ -169,7 +169,7 @@ export default function ImportConfigModal({ visible, onClose, onConfirm, initial
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">Click "Load columns" to read the header row and continue to field mapping.</p>
+                <p className="text-sm text-muted-foreground">Click &quot;Load columns&quot; to read the header row and continue to field mapping.</p>
               </div>
             </section>
           )}
