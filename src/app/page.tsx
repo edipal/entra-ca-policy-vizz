@@ -271,21 +271,24 @@ export default function Home() {
           highlightedPolicy={highlightedPolicy}
         />
       </div>
-      <ImportConfigModal
-        visible={showImportConfig}
-        initialSettings={importSettings}
-        onClose={() => {
-          setShowImportConfig(false)
-          setIsLoading(false)
-          setPendingCsvText(null)
-          setFileName(null)
-        }}
-        onConfirm={(settings) => {
-          setImportSettings(settings)
-          setShowImportConfig(false)
-          processImport(settings)
-        }}
-      />
+      {pendingCsvText && (
+        <ImportConfigModal
+          visible={showImportConfig}
+          initialSettings={importSettings}
+            csvText={pendingCsvText}
+          onClose={() => {
+            setShowImportConfig(false)
+            setIsLoading(false)
+            setPendingCsvText(null)
+            setFileName(null)
+          }}
+          onConfirm={(settings) => {
+            setImportSettings(settings)
+            setShowImportConfig(false)
+            processImport(settings)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -113,12 +113,12 @@ describe('fromCSVRow', () => {
       [COLUMN_MAP["conditions.clientApplications.servicePrincipalFilter.rule"]]: 'spfilter',
     };
     const result = fromCSVRow(row) as Policy;
-    expect(result.conditions.devices.deviceFilter.mode).toBe('include');
-    expect(result.conditions.devices.deviceFilter.rule).toBe('simple string');
-    expect(result.conditions.applications.applicationFilter.mode).toBe('include');
-    expect(result.conditions.applications.applicationFilter.rule).toBe('another string');
-    expect(result.conditions.clientApplications.servicePrincipalFilter.mode).toBe('exclude');
-    expect(result.conditions.clientApplications.servicePrincipalFilter.rule).toBe('spfilter');
+    expect(result.conditions.devices.deviceFilter?.mode).toBe('include');
+    expect(result.conditions.devices.deviceFilter?.rule).toBe('simple string');
+    expect(result.conditions.applications.applicationFilter?.mode).toBe('include');
+    expect(result.conditions.applications.applicationFilter?.rule).toBe('another string');
+    expect(result.conditions.clientApplications.servicePrincipalFilter?.mode).toBe('exclude');
+    expect(result.conditions.clientApplications.servicePrincipalFilter?.rule).toBe('spfilter');
   });
 
   it('should map grantControls.operator and leave authenticationStrength undefined if not present', () => {
