@@ -76,7 +76,24 @@ export enum GuestOrExternalUserType {
   ServiceProvider = 'serviceProvider',
   UnknownFutureValue = 'unknownFutureValue',
 }
-
+export enum ContinuousAccessEvaluationType {
+  Disabled = 'disabled',
+  StrictEnforcement = 'strictEnforcement',
+  UnknownFutureValue = 'unknownFutureValue',
+  StrictLocation = 'strictLocation',
+}
+export enum Operator {
+  AND = "AND",
+  OR = "OR",
+}
+export enum UserActionType {
+  RegisterSecurityInfo = "urn:user:registersecurityinfo",
+  RegisterDevice = "urn:user:registerdevice",
+}
+export enum FilterModeType {
+  Include = 'include',
+  Exclude = 'exclude',
+}
 export interface Policy {
   id?: string;
   displayName?: string;
@@ -89,21 +106,28 @@ export interface Policy {
     applications: {
       includeApplications?: string[];
       excludeApplications?: string[];
-      includeUserActions?: string[];
+      includeUserActions?: UserActionType[];
       includeAuthenticationContextClassReferences?: string[];
-      applicationFilter?: string;
+      applicationFilter?: {
+        mode?: FilterModeType;
+        rule?: string;
+      };
     };
-    authenticationFlows: {
-      transferMethods?: string[];
-    };
+    authenticationFlows?: string[];
     clientApplications: {
       includeServicePrincipals?: string[];
       excludeServicePrincipals?: string[];
-      servicePrincipalFilter?: string;
+      servicePrincipalFilter?: {
+        mode?: FilterModeType;
+        rule?: string;
+      };
     };
     clientAppTypes?: ClientAppType[];
     devices: {
-      deviceFilter?: string;
+      deviceFilter?: {
+        mode?: FilterModeType;
+        rule?: string;
+      };
     };
     locations: {
       includeLocations?: string[];
@@ -138,28 +162,22 @@ export interface Policy {
     builtInControls?: BuiltInGrantControl[];
     customAuthenticationFactors?: string[];
     termsOfUse?: string[];
-    operator?: 'AND' | 'OR';
-    authenticationStrength?: unknown;
+    operator?: Operator;
+    authenticationStrength?: string;
   };
   sessionControls: {
-    applicationEnforcedRestrictions?: {
-      isEnabled?: boolean;
-    };
-    cloudAppSecurity?: {
-      cloudAppSecurityType?: CloudAppSecurityType;
-      isEnabled?: boolean;
-    };
-    persistentBrowser?: {
-      mode?: PersistentBrowserMode;
-      isEnabled?: boolean;
-    };
-    signInFrequency?: {
+    applicationEnforcedRestrictions?: boolean;
+    cloudAppSecurity?: CloudAppSecurityType;
+    continuousAccessEvaluation?: ContinuousAccessEvaluationType;
+    disableResilienceDefaults?: boolean;
+    persistentBrowser?: PersistentBrowserMode;
+    secureSignInSession?: boolean;
+    signInFrequency: {
       value?: number;
       type?: SignInFrequencyType;
-      isEnabled?: boolean;
       authenticationType?: SignInFrequencyAuthenticationType;
       frequencyInterval?: SignInFrequencyInterval;
     };
-    disableResilienceDefaults?: boolean;
+    globalSecureAccessFilteringProfile?: string;
   };
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 import PolicyCard from "@/components/policy-card"
 import PolicyFilters, { type PolicyFilter } from "@/components/policy-filters"
 import { Button } from "@/components/ui/button"
