@@ -30,7 +30,7 @@ export function extractPolicyFieldValueSets(policy: Policy): Map<GraphNodeName, 
   policy.conditions.clientAppTypes?.forEach((v) => add(GraphNodeName.ConditionsClientAppTypes, String(v)))
 
   // Conditions - devices.deviceFilter { mode, rule } -> "(+) rule" | "(-) rule"
-  if (policy.conditions.devices?.deviceFilter) {
+  if (policy.conditions.devices?.deviceFilter?.mode && policy.conditions.devices.deviceFilter.rule) {
     const filter = policy.conditions.devices.deviceFilter
     const prefix = filter.mode === "include" ? "(+) " : filter.mode === "exclude" ? "(-) " : ""
     add(GraphNodeName.ConditionsDevicesDeviceFilter, `${prefix}${filter.rule}`)
@@ -49,7 +49,7 @@ export function extractPolicyFieldValueSets(policy: Policy): Map<GraphNodeName, 
   policy.conditions.applications?.includeAuthenticationContextClassReferences?.forEach((v) =>
     add(GraphNodeName.ConditionsApplicationsIncludeAuthenticationContextClassReferences, v),
   )
-  if (policy.conditions.applications?.applicationFilter) {
+  if (policy.conditions.applications?.applicationFilter?.mode && policy.conditions.applications.applicationFilter.rule) {
     const filter = policy.conditions.applications.applicationFilter
     const prefix = filter.mode === "include" ? "(+) " : filter.mode === "exclude" ? "(-) " : ""
     add(GraphNodeName.ConditionsApplicationsApplicationFilter, `${prefix}${filter.rule}`)
@@ -116,7 +116,7 @@ export function extractPolicyFieldValueSets(policy: Policy): Map<GraphNodeName, 
   policy.conditions.clientApplications?.excludeServicePrincipals?.forEach((v) =>
     add(GraphNodeName.ConditionsClientApplicationsExcludeServicePrincipals, v),
   )
-  if (policy.conditions.clientApplications?.servicePrincipalFilter) {
+  if (policy.conditions.clientApplications?.servicePrincipalFilter?.mode && policy.conditions.clientApplications.servicePrincipalFilter.rule) {
     const filter = policy.conditions.clientApplications.servicePrincipalFilter
     const prefix = filter.mode === "include" ? "(+) " : filter.mode === "exclude" ? "(-) " : ""
     add(GraphNodeName.ConditionsClientApplicationsServicePrincipalFilter, `${prefix}${filter.rule}`)

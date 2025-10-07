@@ -9,6 +9,7 @@ import GraphVisualization from "@/components/graph-visualization"
 
 interface MainContentProps {
   onFileUpload: (file: File) => void
+  onImportFromEntra: () => void
   hasData: boolean
   isLoading: boolean
   error: string | null
@@ -21,6 +22,7 @@ interface MainContentProps {
 
 const MainContent: FC<MainContentProps> = ({
   onFileUpload,
+  onImportFromEntra,
   hasData,
   isLoading,
   error,
@@ -52,7 +54,7 @@ const MainContent: FC<MainContentProps> = ({
           <CardContent>
             <Button onClick={() => {}}>
               <Upload className="mr-2 h-4 w-4" />
-              Try Uploading Again
+              Try Again
             </Button>
           </CardContent>
         </Card>
@@ -88,7 +90,7 @@ const MainContent: FC<MainContentProps> = ({
 
   return (
     <main className="flex-1 flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-      <NoDataCard onFileUpload={onFileUpload} />
+      <NoDataCard onFileUpload={onFileUpload} onImportFromEntra={onImportFromEntra} />
     </main>
   )
 }

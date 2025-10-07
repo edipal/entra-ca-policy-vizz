@@ -13,6 +13,8 @@ import type { PolicyFilter } from "@/components/policy-filters"
 import { GraphNodeName, GraphNodeSubcategory } from "@/types/Graph"
 import { policyMatchesFilter } from "@/utils/PolicyFieldTransforms"
 import ImportConfigModal, { type ImportSettings } from "@/components/import-config-modal"
+import EntraImportModal from "@/components/entra-import-modal"
+import { fetchEntraPolicies } from "@/services/entraService"
 
 // Helper uses shared transformation
 const checkPolicyMatchesFilter = (policy: Policy, filter: PolicyFilter): boolean => {
@@ -34,7 +36,7 @@ export default function Home() {
   const [previouslySelectedPolicies, setPreviouslySelectedPolicies] = useState<Set<string>>(new Set())
   const [filters, setFilters] = useState<PolicyFilter[]>([])
   const [filterOperator, setFilterOperator] = useState<"AND" | "OR">("AND")
-  const [policyColorMap, setPolicyColorMap] = useState<Record<string, string>>({}) // NEW STATE
+  const [policyColorMap, setPolicyColorMap] = useState<Record<string, string>>({})
   const [ignoredSubcategories, setIgnoredSubcategories] = useState<GraphNodeSubcategory[]>([])
   // Import flow state
   const [showImportConfig, setShowImportConfig] = useState(false)
@@ -44,6 +46,21 @@ export default function Home() {
     collectionSplitChar: ",",
     columnMap: DEFAULT_COLUMN_MAP,
   })
+  // Entra modal
+  const [showEntraModal, setShowEntraModal] = useState(false)
+
+  const resetState = useCallback(() => {
+    setIsLoading(false)
+    setError(null)
+    setPolicies(null)
+    setGraph(null)
+    setFileName(null)
+    setPolicyCount(null)
+    setSelectedPolicies(new Set())
+    setHighlightedPolicy(null)
+    setPreviouslySelectedPolicies(new Set())
+    setFilters([])
+  }, [])
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev)
@@ -64,16 +81,11 @@ export default function Home() {
   const togglePolicyHighlight = useCallback(
     (policyCode: string) => {
       if (highlightedPolicy === policyCode) {
-        // Case 1: Unhighlight the currently highlighted policy
         setHighlightedPolicy(null)
         setSelectedPolicies(previouslySelectedPolicies)
-        setPreviouslySelectedPolicies(new Set()) // Clear previous selection after restoring
+        setPreviouslySelectedPolicies(new Set())
       } else {
-        // Case 2: Highlight a new policy (either from no highlight or switching highlight)
-        if (highlightedPolicy === null) {
-          // Only store previous selection if we are transitioning from a non-highlighted state
-          setPreviouslySelectedPolicies(selectedPolicies)
-        }
+        if (highlightedPolicy === null) setPreviouslySelectedPolicies(selectedPolicies)
         setHighlightedPolicy(policyCode)
         setSelectedPolicies(new Set([policyCode]))
       }
@@ -81,26 +93,19 @@ export default function Home() {
     [highlightedPolicy, selectedPolicies, previouslySelectedPolicies],
   )
 
-  // Filter policies based on current filters
   const filteredPolicies = useMemo(() => {
     if (!policies || filters.length === 0) return policies || []
-
     return policies.filter((policy) => {
       const filterResults = filters.map((filter) => {
         if (!filter.field || !filter.value) return true
-
         return checkPolicyMatchesFilter(policy, filter)
       })
-
-      return filterOperator === "AND" ? filterResults.every((result) => result) : filterResults.some((result) => result)
+      return filterOperator === "AND" ? filterResults.every(Boolean) : filterResults.some(Boolean)
     })
   }, [policies, filters, filterOperator])
 
-  // Effect to clear selections when filters change
   useEffect(() => {
-    // Clear all selections when filters change
     setSelectedPolicies(new Set())
-    // Clear highlight when filters change
     setHighlightedPolicy(null)
     setPreviouslySelectedPolicies(new Set())
   }, [filters, filterOperator])
@@ -108,32 +113,20 @@ export default function Home() {
   const showAllPolicies = useCallback(() => {
     const allCodes = new Set(filteredPolicies.map((p) => p.code).filter(Boolean) as string[])
     setSelectedPolicies(allCodes)
-    // Clear highlight when showing all
     setHighlightedPolicy(null)
     setPreviouslySelectedPolicies(new Set())
   }, [filteredPolicies])
 
   const hideAllPolicies = useCallback(() => {
     setSelectedPolicies(new Set())
-    // Clear highlight when hiding all
     setHighlightedPolicy(null)
     setPreviouslySelectedPolicies(new Set())
   }, [])
 
   const handleFileUpload = useCallback(async (file: File) => {
+    resetState()
     setIsLoading(true)
-    setError(null)
-    setPolicies(null)
-    setGraph(null)
-    setFileName(null)
-    setPolicyCount(null)
-    setSelectedPolicies(new Set()) // Reset selections
-    setHighlightedPolicy(null) // Reset highlight
-    setPreviouslySelectedPolicies(new Set()) // Reset previous selection
-    setFilters([]) // Reset filters
-
     const reader = new FileReader()
-
     reader.onload = (e) => {
       try {
         const csvString = e.target?.result as string
@@ -145,30 +138,22 @@ export default function Home() {
         setIsLoading(false)
       }
     }
-
     reader.onerror = () => {
       setIsLoading(false)
       setError("Failed to read file. Please try again.")
     }
-
     reader.readAsText(file)
     setFileName(file.name)
-  }, [])
+  }, [resetState])
 
   const processImport = useCallback((settings: ImportSettings) => {
     if (!pendingCsvText) return
     try {
       const parsedRows = parseCSV(pendingCsvText, { delimiter: settings.csvDelimiter })
-      // Configure defaults once for this import run
-      setPolicyBuilderDefaults({
-        collectionSplitChar: settings.collectionSplitChar,
-        columnMap: settings.columnMap,
-      })
+      setPolicyBuilderDefaults({ collectionSplitChar: settings.collectionSplitChar, columnMap: settings.columnMap })
       const newPolicies = parsedRows.map((row) => fromCSVRow(row))
-      // Sort policies by code
       newPolicies.sort((a, b) => (a.code || "").localeCompare(b.code || ""))
       const newGraph = fromPolicyCollection(newPolicies)
-
       setPolicies(newPolicies)
       setGraph(newGraph)
       setPolicyCount(newPolicies.length)
@@ -185,55 +170,47 @@ export default function Home() {
     setIgnoredSubcategories(subcats)
   }, [])
 
-  // Generate filtered graph based on selected policies
-  const filteredGraph =
-    graph && policies && selectedPolicies.size > 0
-      ? (() => {
-          const selectedPolicyArray = policies.filter((p) => p.code && selectedPolicies.has(p.code))
-          return fromPolicyCollection(selectedPolicyArray, ignoredSubcategories)
-        })()
-      : null
+  const filteredGraph = graph && policies && selectedPolicies.size > 0 ? (() => {
+    const selectedPolicyArray = policies.filter((p) => p.code && selectedPolicies.has(p.code))
+    return fromPolicyCollection(selectedPolicyArray, ignoredSubcategories)
+  })() : null
 
-  // When policies change, initialize color map
   useEffect(() => {
-    if (!policies) {
-      setPolicyColorMap({})
-      return
-    }
-    const POLICY_COLORS = [
-      "#ef4444",
-      "#3b82f6",
-      "#10b981",
-      "#f59e0b",
-      "#8b5cf6",
-      "#ec4899",
-      "#06b6d4",
-      "#84cc16",
-      "#f97316",
-      "#6366f1",
-      "#14b8a6",
-      "#eab308",
-      "#dc2626",
-      "#2563eb",
-      "#059669",
-      "#d97706",
-      "#7c3aed",
-      "#db2777",
-      "#0891b2",
-      "#65a30d",
-    ]
+    if (!policies) { setPolicyColorMap({}); return }
+    const POLICY_COLORS = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16", "#f97316", "#6366f1", "#14b8a6", "#eab308", "#dc2626", "#2563eb", "#059669", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d"]
     const colorMap: Record<string, string> = {}
-    policies.forEach((policy, index) => {
-      if (policy.code) {
-        colorMap[policy.code] = POLICY_COLORS[index % POLICY_COLORS.length]
-      }
-    })
+    policies.forEach((policy, index) => { if (policy.code) colorMap[policy.code] = POLICY_COLORS[index % POLICY_COLORS.length] })
     setPolicyColorMap(colorMap)
   }, [policies])
 
-  // Handler to update a policy's color
   const handlePolicyColorChange = useCallback((policyCode: string, color: string) => {
     setPolicyColorMap((prev) => ({ ...prev, [policyCode]: color }))
+  }, [])
+
+  // Entra import flow
+  const startEntraImport = useCallback(() => {
+    resetState()
+    setShowEntraModal(true)
+  }, [resetState])
+
+  const performEntraImport = useCallback(async ({ clientId, tenantId }: { clientId: string; tenantId: string }) => {
+    setShowEntraModal(false)
+    setIsLoading(true)
+    try {
+      const newPolicies = await fetchEntraPolicies({ clientId, tenantId })
+      const newGraph = fromPolicyCollection(newPolicies)
+      setPolicies(newPolicies)
+      setGraph(newGraph)
+      setPolicyCount(newPolicies.length)
+      setFileName(`Entra (${tenantId})`)
+      setSelectedPolicies(new Set(newPolicies.map(p=>p.code).filter(Boolean) as string[]))
+    } catch (e) {
+      const err = e as { message?: string }
+      console.error(err)
+      setError(err.message || 'Failed to import from Entra')
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   return (
@@ -261,6 +238,7 @@ export default function Home() {
         />
         <MainContent
           onFileUpload={handleFileUpload}
+          onImportFromEntra={startEntraImport}
           hasData={!!policies}
           isLoading={isLoading}
           error={error}
@@ -275,18 +253,16 @@ export default function Home() {
         <ImportConfigModal
           visible={showImportConfig}
           initialSettings={importSettings}
-            csvText={pendingCsvText}
-          onClose={() => {
-            setShowImportConfig(false)
-            setIsLoading(false)
-            setPendingCsvText(null)
-            setFileName(null)
-          }}
-          onConfirm={(settings) => {
-            setImportSettings(settings)
-            setShowImportConfig(false)
-            processImport(settings)
-          }}
+          csvText={pendingCsvText}
+          onClose={() => { setShowImportConfig(false); setIsLoading(false); setPendingCsvText(null); setFileName(null) }}
+          onConfirm={(settings) => { setImportSettings(settings); setShowImportConfig(false); processImport(settings) }}
+        />
+      )}
+      {showEntraModal && (
+        <EntraImportModal
+          visible={showEntraModal}
+          onClose={() => setShowEntraModal(false)}
+          onConfirm={performEntraImport}
         />
       )}
     </div>
