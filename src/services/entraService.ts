@@ -78,11 +78,11 @@ async function graphGet<T>(token: string, url: string): Promise<T> {
     const safeBody = typeof bodyText === 'string' ? bodyText : '(unreadable body)'
     const safeGraphError = graphError ? { error: graphError.error } : undefined
     console.error('[Graph] Request failed', { url, status: res.status, body: safeBody || '(empty)', graphError: safeGraphError })
-    const errMsg = graphError?.error?.message || `Graph request failed: ${res.status}`
-    const err = new Error(errMsg)
-    ;(err as any).status = res.status
-    ;(err as any).graph = graphError
-    throw err
+  const errMsg = graphError?.error?.message || `Graph request failed: ${res.status}`
+  const err = new Error(errMsg) as Error & { status?: number; graph?: GraphErrorBody }
+  err.status = res.status
+  err.graph = graphError
+  throw err
   }
   try {
     const json = await res.json()
@@ -110,24 +110,24 @@ function collectReferencedIds(policies: GraphConditionalAccessPolicy[]) {
   }
 
   for (const p of policies) {
-    const c: any = p.conditions || {}
-    const usersCond = c.users || {}
-    const appsCond = c.applications || {}
-    const clientAppsCond = c.clientApplications || {}
-    const locationsCond = c.locations || {}
+  const c = (p.conditions || {}) as Record<string, unknown>
+  const usersCond = (c['users'] || {}) as Record<string, unknown>
+  const appsCond = (c['applications'] || {}) as Record<string, unknown>
+  const clientAppsCond = (c['clientApplications'] || {}) as Record<string, unknown>
+  const locationsCond = (c['locations'] || {}) as Record<string, unknown>
 
-    addAll(usersCond.includeUsers, users)
-    addAll(usersCond.excludeUsers, users)
-    addAll(usersCond.includeGroups, groups)
-    addAll(usersCond.excludeGroups, groups)
-    addAll(usersCond.includeRoles, roles)
-    addAll(usersCond.excludeRoles, roles)
-    addAll(appsCond.includeApplications, applications)
-    addAll(appsCond.excludeApplications, applications)
-    addAll(clientAppsCond.includeServicePrincipals, servicePrincipals)
-    addAll(clientAppsCond.excludeServicePrincipals, servicePrincipals)
-    addAll(locationsCond.includeLocations, namedLocations)
-    addAll(locationsCond.excludeLocations, namedLocations)
+  addAll(Array.isArray(usersCond['includeUsers']) ? usersCond['includeUsers'] : undefined, users)
+  addAll(Array.isArray(usersCond['excludeUsers']) ? usersCond['excludeUsers'] : undefined, users)
+  addAll(Array.isArray(usersCond['includeGroups']) ? usersCond['includeGroups'] : undefined, groups)
+  addAll(Array.isArray(usersCond['excludeGroups']) ? usersCond['excludeGroups'] : undefined, groups)
+  addAll(Array.isArray(usersCond['includeRoles']) ? usersCond['includeRoles'] : undefined, roles)
+  addAll(Array.isArray(usersCond['excludeRoles']) ? usersCond['excludeRoles'] : undefined, roles)
+  addAll(Array.isArray(appsCond['includeApplications']) ? appsCond['includeApplications'] : undefined, applications)
+  addAll(Array.isArray(appsCond['excludeApplications']) ? appsCond['excludeApplications'] : undefined, applications)
+  addAll(Array.isArray(clientAppsCond['includeServicePrincipals']) ? clientAppsCond['includeServicePrincipals'] : undefined, servicePrincipals)
+  addAll(Array.isArray(clientAppsCond['excludeServicePrincipals']) ? clientAppsCond['excludeServicePrincipals'] : undefined, servicePrincipals)
+  addAll(Array.isArray(locationsCond['includeLocations']) ? locationsCond['includeLocations'] : undefined, namedLocations)
+  addAll(Array.isArray(locationsCond['excludeLocations']) ? locationsCond['excludeLocations'] : undefined, namedLocations)
   }
   const directoryObjectIds = Array.from(new Set([
     ...users,
