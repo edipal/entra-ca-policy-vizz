@@ -153,8 +153,7 @@ export function getPolicyBuilderDefaults(): Readonly<typeof CURRENT_OPTIONS> {
   return CURRENT_OPTIONS
 }
 
-export function fromCSVRow(row: Record<string, string>, _options?: PolicyBuilderOptions): Policy {
-  // _options ignored to keep call sites clean; configure via setPolicyBuilderDefaults instead
+export function fromCSVRow(row: Record<string, string>): Policy {
   const displayName = getValueOrUndef(row, col("displayName")) || undefined
   const codeFromDisplay = displayName?.match(/CA\d{3,5}/)?.[0]
   const fallbackId = getValueOrUndef(row, col("id"))

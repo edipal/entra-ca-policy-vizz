@@ -145,7 +145,6 @@ async function resolveDirectoryObjects(token: string, ids: string[], batchSize =
     const slice = ids.slice(i, i + batchSize)
     const body = { ids: slice }
     try {
-      // eslint-disable-next-line no-await-in-loop
       const resp = await fetch('https://graph.microsoft.com/v1.0/directoryObjects/getByIds', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -171,7 +170,6 @@ async function resolveNamedLocations(token: string, ids: Set<string>): Promise<M
   const result = new Map<string, string>()
   for (const id of ids) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       const nl = await graphGet<{ id?: string; displayName?: string }>(token, `https://graph.microsoft.com/v1.0/identity/conditionalAccess/namedLocations/${id}?$select=id,displayName`)
       if (nl.id) result.set(nl.id, nl.displayName || nl.id)
     } catch (e) {
