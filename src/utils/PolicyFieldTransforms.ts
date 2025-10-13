@@ -174,6 +174,9 @@ export function extractPolicyFieldValueSets(policy: Policy): Map<GraphNodeName, 
       )
     }
   }
+  if (policy.grantControls?.authenticationStrength) {
+    add(GraphNodeName.GrantControlsAuthenticationStrength, policy.grantControls.authenticationStrength)
+  }
   policy.grantControls?.customAuthenticationFactors?.forEach((v) =>
     add(GraphNodeName.GrantControlsCustomAuthenticationFactor, v),
   )

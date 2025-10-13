@@ -143,6 +143,7 @@ export enum GraphNodeName {
   SessionControlsPersistentBrowser = 'sessionControls.persistentBrowser',
   GrantControlsBuiltInControls = 'grantControls.builtInControls',
   GrantControlsCustomAuthenticationFactor = 'grantControls.customAuthenticationFactor',
+  GrantControlsAuthenticationStrength = 'grantControls.authenticationStrength',
   GrantControlsTermsOfUse = 'grantControls.termsOfUse',
   // None / Not Configured
   UsersNone = 'users.none',
@@ -186,6 +187,7 @@ export const GraphNodeNameCategoryMap: Record<GraphNodeName, { category: GraphNo
   [GraphNodeName.SessionControlsSignInFrequency]: { category: GraphNodeCategory.Session, subcategory: GraphNodeSubcategory.SignInFrequency },
   [GraphNodeName.SessionControlsPersistentBrowser]: { category: GraphNodeCategory.Session, subcategory: GraphNodeSubcategory.PersistentBrowser },
   [GraphNodeName.GrantControlsBuiltInControls]: { category: GraphNodeCategory.Grant, subcategory: GraphNodeSubcategory.BuiltinControls },
+  [GraphNodeName.GrantControlsAuthenticationStrength]: { category: GraphNodeCategory.Grant, subcategory: GraphNodeSubcategory.AuthenticationStrength },
   [GraphNodeName.GrantControlsCustomAuthenticationFactor]: { category: GraphNodeCategory.Grant, subcategory: GraphNodeSubcategory.CustomAuthenticationFactor },
   [GraphNodeName.GrantControlsTermsOfUse]: { category: GraphNodeCategory.Grant, subcategory: GraphNodeSubcategory.TermsOfUse },
   [GraphNodeName.UsersNone]: { category: GraphNodeCategory.Users, subcategory: GraphNodeSubcategory.Default },
