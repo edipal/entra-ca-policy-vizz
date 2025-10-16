@@ -81,16 +81,52 @@ export default function PolicyFilters({
     onFiltersChange(filters.map((f) => (f.id === filterId ? { ...f, ...updates } : f)))
   }
 
-  const getFieldDisplayName = (field: GraphNodeName) => {
-    // Convert GraphNodeName to a more readable format
-    return field
-      .replace(/^conditions\./, "")
-      .replace(/^grantControls\./, "grant.")
-      .replace(/^sessionControls\./, "session.")
-      .replace(/([A-Z])/g, " $1")
-      .toLowerCase()
-      .replace(/^\w/, (c) => c.toUpperCase())
+  // Human friendly labels for each GraphNodeName value - to be used as filter names
+  const GraphNodeNameDisplayMap: Record<GraphNodeName, string> = {
+    [GraphNodeName.ConditionsUserRiskLevels]: "Conditions - User Risk Levels",
+    [GraphNodeName.ConditionsSignInRiskLevels]: "Conditions - Sign-in Risk Levels",
+    [GraphNodeName.ConditionsClientAppTypes]: "Conditions - Client App Types",
+    [GraphNodeName.ConditionsServicePrincipalRiskLevels]: "Conditions - Service Principal Risk Levels",
+    [GraphNodeName.ConditionsDevicesDeviceFilter]: "Conditions - Devices (Device Filter)",
+    [GraphNodeName.ConditionsApplicationsIncludeApplications]: "Target Resources - Included Applications",
+    [GraphNodeName.ConditionsApplicationsExcludeApplications]: "Target Resources - Excluded Applications",
+    [GraphNodeName.ConditionsApplicationsIncludeUserActions]: "Target Resources - Included User Actions",
+    [GraphNodeName.ConditionsApplicationsIncludeAuthenticationContextClassReferences]: "Target Resources - Included Authentication Contexts",
+    [GraphNodeName.ConditionsApplicationsApplicationFilter]: "Target Resources - Application Filter",
+    [GraphNodeName.ConditionsUsersIncludeUsers]: "Users - Included Users",
+    [GraphNodeName.ConditionsUsersExcludeUsers]: "Users - Excluded Users",
+    [GraphNodeName.ConditionsUsersIncludeGroups]: "Users - Included Groups",
+    [GraphNodeName.ConditionsUsersExcludeGroups]: "Users - Excluded Groups",
+    [GraphNodeName.ConditionsUsersIncludeRoles]: "Users - Included Roles",
+    [GraphNodeName.ConditionsUsersExcludeRoles]: "Users - Excluded Roles",
+    [GraphNodeName.ConditionsUsersIncludeGuestsOrExternalUsers]: "Users - Included Guests / External Users",
+    [GraphNodeName.ConditionsUsersExcludeGuestsOrExternalUsers]: "Users - Excluded Guests / External Users",
+    [GraphNodeName.ConditionsPlatformsIncludePlatforms]: "Conditions - Included Device Platforms",
+    [GraphNodeName.ConditionsPlatformsExcludePlatforms]: "Conditions - Excluded Device Platforms",
+    [GraphNodeName.ConditionsLocationsIncludeLocations]: "Network - Included Locations",
+    [GraphNodeName.ConditionsLocationsExcludeLocations]: "Network - Excluded Locations",
+    [GraphNodeName.ConditionsClientApplicationsIncludeServicePrincipals]: "Users - Included Client Apps / Service Principals",
+    [GraphNodeName.ConditionsClientApplicationsExcludeServicePrincipals]: "Users - Excluded Client Apps / Service Principals",
+    [GraphNodeName.ConditionsClientApplicationsServicePrincipalFilter]: "Users - Client App / Service Principal Filter",
+    [GraphNodeName.ConditionsAuthenticationFlowsTransferMethods]: "Conditions - Authentication Flows / Transfer Methods",
+    [GraphNodeName.SessionControlsDisableResilienceDefaults]: "Session - Disable Resilience Defaults",
+    [GraphNodeName.SessionControlsApplicationEnforcedRestrictions]: "Session - Application Enforced Restrictions",
+    [GraphNodeName.SessionControlsCloudAppSecurity]: "Session - Cloud App Security",
+    [GraphNodeName.SessionControlsSignInFrequency]: "Session - Sign-in Frequency",
+    [GraphNodeName.SessionControlsPersistentBrowser]: "Session - Persistent Browser",
+    [GraphNodeName.GrantControlsBuiltInControls]: "Grant - Built-in Controls",
+    [GraphNodeName.GrantControlsCustomAuthenticationFactor]: "Grant - Custom Authentication Factor",
+    [GraphNodeName.GrantControlsAuthenticationStrength]: "Grant - Authentication Strength",
+    [GraphNodeName.GrantControlsTermsOfUse]: "Grant - Terms of Use",
+    [GraphNodeName.UsersNone]: "Users - None",
+    [GraphNodeName.TargetResourcesNone]: "Target Resources - None",
+    [GraphNodeName.NetworkNotConfigured]: "Network - Not Configured",
+    [GraphNodeName.ConditionsNotConfigured]: "Conditions - Not Configured",
+    [GraphNodeName.GrantNotConfigured]: "Grant - Not Configured",
+    [GraphNodeName.SessionNotConfigured]: "Session - Not Configured",
   }
+
+  const getFieldDisplayName = (field: GraphNodeName) => GraphNodeNameDisplayMap[field] ?? field
 
   React.useEffect(() => {
     if (onFilteredPoliciesChange) {
