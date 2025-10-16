@@ -128,6 +128,23 @@ export default function PolicyFilters({
 
   const getFieldDisplayName = (field: GraphNodeName) => GraphNodeNameDisplayMap[field] ?? field
 
+  // Custom group order for fields. Any display name that starts with one of these
+  // prefixes will be placed in that group (in this order). Items within a group
+  // are sorted alphabetically by display name.
+  const fieldGroupOrder = [
+    "Users",
+    "Target Resources",
+    "Network",
+    "Conditions",
+    "Grant",
+    "Session",
+  ]
+
+  const getFieldGroupIndex = (displayName: string) => {
+    const idx = fieldGroupOrder.findIndex((prefix) => displayName.startsWith(prefix))
+    return idx === -1 ? fieldGroupOrder.length : idx
+  }
+
   React.useEffect(() => {
     if (onFilteredPoliciesChange) {
       onFilteredPoliciesChange(filteredPolicies)
@@ -195,6 +212,19 @@ export default function PolicyFilters({
               <SelectContent>
                 {Object.values(GraphNodeName)
                   .filter((field) => fieldValues[field] && fieldValues[field].length > 0)
+                  .sort((a, b) => {
+                    const nameA = getFieldDisplayName(a)
+                    const nameB = getFieldDisplayName(b)
+                    const groupA = getFieldGroupIndex(nameA)
+                    const groupB = getFieldGroupIndex(nameB)
+                    if (groupA !== groupB) return groupA - groupB
+                    // Same group -> alphabetical (case-insensitive)
+                    const lowerA = nameA.toLowerCase()
+                    const lowerB = nameB.toLowerCase()
+                    if (lowerA < lowerB) return -1
+                    if (lowerA > lowerB) return 1
+                    return 0
+                  })
                   .map((field) => (
                     <SelectItem key={field} value={field}>
                       {getFieldDisplayName(field)}
