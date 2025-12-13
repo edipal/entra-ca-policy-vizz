@@ -86,6 +86,19 @@ Add your own screenshots to replace the placeholders below. Place images in `doc
    - Local development: `http://localhost:3000`
    - Production (Vercel): `https://entra-ca-policy-vizz.vercel.app`
 
+## Known Issues
+
+Users --> Include / Exclude --> Select users and groups --> Guest and external users : ignored
+
+Target Resources --> Select Resources --> Select : Some IDs not replaced
+
+Conditions --> Insider risk : ignored
+
+Conditions --> Authentication flows : ignored
+
+Session --> disable resilience defaults
+
+Terms of Use --> only id is shown
 
 ## License
 This project is released under the MIT License. See `LICENSE` for details.
