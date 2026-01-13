@@ -21,7 +21,7 @@ const Header: FC<HeaderProps> = ({ fileName, policyCount, toggleSidebar }) => {
         </Button>
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Conditional Access Policy Visualization
+            Entra CA Policy Vizz
           </h1>
           <p className="text-sm text-gray-700 dark:text-gray-300">
             Analyze and visualize Entra ID Conditional Access policies
