@@ -214,9 +214,9 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen max-h-screen w-full overflow-hidden bg-background text-foreground">
       <Header fileName={fileName} policyCount={policyCount} toggleSidebar={toggleSidebar} />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           policies={policies}

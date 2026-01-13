@@ -77,7 +77,7 @@ const MainContent: FC<MainContentProps> = ({
     }
 
     return (
-      <main className="flex-1 p-4 bg-gray-50 dark:bg-gray-900 overflow-auto">
+      <main className="flex-1 h-full min-h-0 p-4 bg-gray-50 dark:bg-gray-900 overflow-auto">
         <GraphVisualization
           graph={graph}
           policyColorMap={policyColorMap}

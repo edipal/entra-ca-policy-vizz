@@ -70,7 +70,7 @@ export default function Sidebar({
   return (
     <aside
       className={cn(
-        "border-r bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out flex-shrink-0 h-full min-h-0 flex flex-col overflow-hidden",
+        "border-r bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out flex-shrink-0 h-full max-h-full min-h-0 flex flex-col overflow-hidden",
         isSidebarOpen ? "w-64 p-4" : "w-20 p-2"
       )}
     >
@@ -93,12 +93,12 @@ export default function Sidebar({
           </section>
 
           {/* Policies Section */}
-          <section className="mt-6 flex-1 min-h-0 flex flex-col">
-            <h2 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <h2 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4 shrink-0">
               Policies ({visiblePoliciesCount}/{filteredPoliciesCount})
             </h2>
-            <div className="space-y-4 flex-1 min-h-0 flex flex-col">
-              <div className="flex gap-2 mb-2">
+            <div className="flex flex-col flex-1 min-h-0 overflow-hidden space-y-4">
+              <div className="flex gap-2 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -116,7 +116,7 @@ export default function Sidebar({
                   Hide All
                 </Button>
               </div>
-              <div className="space-y-2 flex-1 min-h-0 overflow-y-auto max-h-[60vh]">
+              <div className="flex-1 min-h-0 overflow-y-auto pr-2">
                 {filteredPolicies && filteredPolicies.length > 0 ? (
                   filteredPolicies.map((policy, index) => (
                     <PolicyCard
@@ -137,14 +137,14 @@ export default function Sidebar({
                 )}
               </div>
             </div>
-          </section>
+          </div>
 
           {/* Ignored Subcategories Section at the bottom */}
-          <section className="mt-auto">
+          <div className="mt-auto pt-4 shrink-0 border-t dark:border-gray-800">
             <h2 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">
               Ignored Subcategories
             </h2>
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900">
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-1 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900">
               {subcategoriesByCategory.map(({ category, subcategories }) => (
                 <div key={category}>
                   <div className="font-semibold text-sm mt-2 mb-1">{category}</div>
@@ -162,11 +162,11 @@ export default function Sidebar({
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         </div>
       ) : (
         // Collapsed sidebar
-        <div className="h-150 flex flex-col items-center pt-8 gap-8">
+        <div className="h-full flex flex-col items-center pt-8 gap-8">
           <div className="flex items-center justify-center h-40">
             <h2 className="font-bold text-gray-900 dark:text-gray-100 text-base transform rotate-90 origin-center whitespace-nowrap">
               Filters
