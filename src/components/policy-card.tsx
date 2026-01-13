@@ -74,12 +74,18 @@ const PolicyCard: FC<PolicyCardProps> = ({
               title={`Policy color: ${policyColor}`}
             />
           ) : null}
-          <Badge className={cn(getBadgeClass(policy.state), "h-7 min-w-[90px] flex items-center justify-center px-2 text-sm font-medium rounded")}>{getPolicyStateKey(policy.state)}</Badge>
+          <Badge
+            title={`Policy state: ${getPolicyStateKey(policy.state)}`}
+            className={cn(getBadgeClass(policy.state), "h-7 min-w-[90px] flex items-center justify-center px-2 text-sm font-medium rounded")}
+          >
+            {getPolicyStateKey(policy.state)}
+          </Badge>
         </div>
         <div className="flex gap-2 h-7 items-center">
           <Button
             variant="outline"
             size="icon"
+            title={isSelected ? "Hide Policy" : "Show Policy"}
             className={cn(
               "h-7 w-7 p-0 bg-white border-gray-300 text-gray-800 hover:bg-gray-50 dark:bg-white dark:border-gray-300 dark:text-gray-800 dark:hover:bg-gray-50",
               isSelected &&
@@ -93,6 +99,7 @@ const PolicyCard: FC<PolicyCardProps> = ({
           <Button
             variant="outline"
             size="icon"
+            title={isHighlighted ? "Unhighlight Policy" : "Highlight Policy"}
             className={cn(
               "h-7 w-7 p-0 bg-white border-gray-300 text-gray-800 hover:bg-gray-50 dark:bg-white dark:border-gray-300 dark:text-gray-800 dark:hover:bg-gray-50",
               isHighlighted &&

@@ -142,9 +142,9 @@ export default function Sidebar({
           {/* Ignored Subcategories Section at the bottom */}
           <div className="mt-auto pt-4 shrink-0 border-t dark:border-gray-800">
             <h2 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">
-              Ignored Subcategories
+              Hide Subcategories
             </h2>
-            <div className="space-y-2 max-h-40 overflow-y-auto pr-1 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900">
+            <div className="space-y-2 max-h-50 overflow-y-auto pr-1 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900">
               {subcategoriesByCategory.map(({ category, subcategories }) => (
                 <div key={category}>
                   <div className="font-semibold text-sm mt-2 mb-1">{category}</div>
