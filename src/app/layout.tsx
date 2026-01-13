@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Entra ID Conditional Access Policies Visualizer",
-  description: "This project is a modern React + Next.js web application skeleton for visualizing and analyzing Entra ID Conditional Access Policies.",
+  title: "Entra CA Policy Vizz",
+  description: "This project is a modern React + Next.js web application for visualizing and analyzing Entra ID Conditional Access Policies.",
 }
 
 export default function RootLayout({
