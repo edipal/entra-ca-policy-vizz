@@ -77,6 +77,11 @@ Add your own screenshots to replace the placeholders below. Place images in `doc
 - Import from Entra: Click “Import from Entra”, enter your Client ID and Tenant ID, complete MSAL popup sign-in, and the app will fetch policies via Graph.
 - Explore: Use the sidebar to select policies, set colors, and filter. The canvas updates to reflect the selected/filtered set.
 
+## Test Import File
+
+- **File:** [docs/ca-policies-demo.csv](docs/ca-policies-demo.csv) — A sample Conditional Access CSV you can import to quickly test the app and demo features.
+- **Live Demo:** https://entra-ca-policy-vizz.vercel.app/ — Visit the deployed app to try the visualizer without running locally.
+
 ## Required permissions for Entra import
 - Microsoft Graph (Delegated):
    - `Policy.Read.All` — Read Conditional Access policies
