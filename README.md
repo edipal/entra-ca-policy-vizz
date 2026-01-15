@@ -106,4 +106,4 @@ Session --> disable resilience defaults
 Terms of Use --> only id is shown
 
 ## License
-This project is released under the MIT License. See `LICENSE` for details.
+This project is released under the Apache License 2.0. See LICENSE for details.
